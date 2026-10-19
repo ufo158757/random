@@ -123,7 +123,6 @@ const SUPABASE_URL = "https://hckkghduvjzfemzprejl.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhja2tnaGR1dmp6ZmVtenByZWpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0MTY1NzcsImV4cCI6MjEwNzk5MjU3N30.pNT4sn03ZS6vB14SQ3_h-3TEH9Dw5Z7KkkoAaaWgBtc";
 // =============================================
 
-// 【修改点】把变量名改成了 supabaseClient，避免冲突
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // 掷骰主函数
@@ -151,8 +150,6 @@ async function rollDice() {
   const resultText = results.join(", ");
   document.getElementById("resultBox").innerText = resultText;
 
-  // 写入数据库
-  // 【修改点】这里的 supabase 改成了 supabaseClient
   await supabaseClient.from("roll_history").insert([
     {
       player_name: name,
@@ -167,7 +164,6 @@ async function rollDice() {
 
 // 读取历史记录
 async function loadRecords() {
-  // 【修改点】这里的 supabase 改成了 supabaseClient
   const { data } = await supabaseClient
     .from("roll_history")
     .select("*")
@@ -185,9 +181,7 @@ async function loadRecords() {
   }
 }
 
-// 页面加载自动读取记录
 loadRecords();
-// 定时自动刷新记录，实现手机电脑同步，每 3 秒拉取一次
 setInterval(loadRecords, 3000);
 </script>
 </body>
