@@ -123,7 +123,8 @@ const SUPABASE_URL = "https://hckkghduvjzfemzprejl.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhja2tnaGR1dmp6ZmVtenByZWpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0MTY1NzcsImV4cCI6MjEwNzk5MjU3N30.pNT4sn03ZS6vB14SQ3_h-3TEH9Dw5Z7KkkoAaaWgBtc";
 // =============================================
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// 【修改点】把变量名改成了 supabaseClient，避免冲突
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // 掷骰主函数
 async function rollDice() {
@@ -151,7 +152,8 @@ async function rollDice() {
   document.getElementById("resultBox").innerText = resultText;
 
   // 写入数据库
-  await supabase.from("roll_history").insert([
+  // 【修改点】这里的 supabase 改成了 supabaseClient
+  await supabaseClient.from("roll_history").insert([
     {
       player_name: name,
       min_val: min,
@@ -165,7 +167,8 @@ async function rollDice() {
 
 // 读取历史记录
 async function loadRecords() {
-  const { data } = await supabase
+  // 【修改点】这里的 supabase 改成了 supabaseClient
+  const { data } = await supabaseClient
     .from("roll_history")
     .select("*")
     .order("created_at", { ascending: false });
