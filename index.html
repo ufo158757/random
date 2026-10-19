@@ -1,179 +1,191 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>联机共享掷骰</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft YaHei", sans-serif;
-        }
-        body {
-            background: #1a1d29;
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-        }
-        .container {
-            background: #252938;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-            width: 100%;
-            max-width: 580px;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 26px;
-            color: #7cc7ff;
-        }
-        .row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 18px;
-        }
-        .input-group {
-            flex: 1;
-        }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 14px;
-            color: #b8c0d8;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: #1c202c;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-        }
-        input:focus {
-            box-shadow: 0 0 0 2px #7cc7ff;
-        }
-        .option-row {
-            margin-bottom: 24px;
-        }
-        .checkbox-wrap {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            background: #3b82f6;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background: #2563eb;
-        }
-        .result-box {
-            margin-top: 28px;
-            min-height: 70px;
-            background: #1c202c;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: #7cc7ff;
-            padding: 16px;
-            word-break: break-all;
-        }
-        .history-title {
-            margin-top: 32px;
-            font-size: 18px;
-            color: #7cc7ff;
-        }
-        .history-list {
-            margin-top: 12px;
-            background: #1c202c;
-            border-radius: 8px;
-            padding: 16px;
-            min-height: 140px;
-            max-height: 420px;
-            overflow-y: auto;
-        }
-        .history-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #2c3448;
-        }
-        .player-name {
-            color: #60a5fa;
-            font-weight: bold;
-        }
-        .history-time {
-            font-size: 12px;
-            color: #8892aa;
-            margin-top: 4px;
-        }
-        .tip {
-            margin-top: 12px;
-            font-size: 13px;
-            color: #9aa4bb;
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>联机共享掷骰</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      background: #1a1d29;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      margin: 0;
+      font-family: sans-serif;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .input-item {
+      margin: 16px 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      font-size: 18px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .checkbox-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+    }
+    button {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background-color: #3684ff;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .result-box {
+      width: 100%;
+      padding: 20px;
+      margin-top: 16px;
+      background: #24283b;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 32px;
+    }
+    .record-title {
+      margin-top: 32px;
+      font-size: 24px;
+    }
+    .record-list {
+      background: #24283b;
+      padding: 16px;
+      border-radius: 12px;
+      min-height: 120px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎲 联机共享掷骰</h1>
+<div class="container">
+  <h1>🎲 联机共享掷骰</h1>
 
-        <div class="row">
-            <div class="input-group">
-                <label>玩家昵称</label>
-                <input type="text" id="playerName" value="玩家 A">
-            </div>
-        </div>
+  <div class="input-item">
+    <label>玩家昵称</label>
+    <input id="name" value="玩家 A">
+  </div>
 
-        <div class="row">
-            <div class="input-group">
-                <label>最小值</label>
-                <input type="number" id="minNum" value="1">
-            </div>
-            <div class="input-group">
-                <label>最大值</label>
-                <input type="number" id="maxNum" value="100">
-            </div>
-        </div>
-
-        <div class="option-row">
-            <label>生成数量</label>
-            <input type="number" id="countNum" value="1" min="1">
-            <div class="checkbox-wrap">
-                <input type="checkbox" id="noRepeat">
-                <label for="noRepeat">不重复抽取</label>
-            </div>
-        </div>
-
-        <button onclick="rollDice()">掷骰提交</button>
-        <div class="result-box" id="result">--</div>
-
-        <div class="history-title">📜 全局共享记录</div>
-        <div class="history-list" id="historyBox"></div>
-
-        <div class="tip">所有打开网页的队友，自动读取同一份掷骰记录</div>
+  <div class="row">
+    <div class="input-item">
+      <label>最小值</label>
+      <input id="minVal" value="1">
     </div>
+    <div class="input-item">
+      <label>最大值</label>
+      <input id="maxVal" value="100">
+    </div>
+  </div>
 
-    <script>
-        // ========= Supabase 参数 =========
-        const SUPABASE_URL = "https://hckkghduvjfzemzprejl.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhja2tnaGR1dmp6ZmVtenByZWpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0MTY1NzcsImV4cCI6MjEwNzk5MjU3N3
+  <div class="input-item">
+    <label>生成数量</label>
+    <input id="count" value="1">
+  </div>
+
+  <div class="checkbox-row">
+    <input type="checkbox" id="noRepeat">
+    <label for="noRepeat">不重复抽取</label>
+  </div>
+
+  <button onclick="rollDice()">掷骰提交</button>
+
+  <div class="result-box" id="resultBox">--</div>
+
+  <div class="record-title">📜 全局共享记录</div>
+  <div class="record-list" id="recordList"></div>
+</div>
+
+<script>
+// ========= 填入你的 Supabase 信息 =========
+const SUPABASE_URL = "PASTE_YOUR_URL_HERE";
+const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_KEY_HERE";
+// =============================================
+
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// 掷骰主函数
+async function rollDice() {
+  const name = document.getElementById("name").value;
+  const min = parseInt(document.getElementById("minVal").value);
+  const max = parseInt(document.getElementById("maxVal").value);
+  const count = parseInt(document.getElementById("count").value);
+  const noRepeat = document.getElementById("noRepeat").checked;
+
+  let results = [];
+  if (noRepeat) {
+    const pool = [];
+    for (let i = min; i <= max; i++) pool.push(i);
+    for (let i = 0; i < count && pool.length > 0; i++) {
+      const idx = Math.floor(Math.random() * pool.length);
+      results.push(pool.splice(idx, 1)[0]);
+    }
+  } else {
+    for (let i = 0; i < count; i++) {
+      results.push(Math.floor(Math.random() * (max - min + 1)) + min);
+    }
+  }
+
+  const resultText = results.join(", ");
+  document.getElementById("resultBox").innerText = resultText;
+
+  // 写入数据库
+  await supabase.from("roll_history").insert([
+    {
+      player_name: name,
+      min_val: min,
+      max_val: max,
+      roll_result: resultText
+    }
+  ]);
+
+  loadRecords();
+}
+
+// 读取历史记录
+async function loadRecords() {
+  const { data } = await supabase
+    .from("roll_history")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const recordList = document.getElementById("recordList");
+  recordList.innerHTML = "";
+  if (data) {
+    data.forEach(row => {
+      const div = document.createElement("div");
+      div.style.margin = "8px 0";
+      div.innerText = `${row.player_name}：${row.roll_result}`;
+      recordList.appendChild(div);
+    });
+  }
+}
+
+// 页面加载自动读取记录
+loadRecords();
+// 定时自动刷新记录，实现手机电脑同步，每 3 秒拉取一次
+setInterval(loadRecords, 3000);
+</script>
+</body>
+</html>
