@@ -3,30 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>随机数生成器</title>
+    <title>联机共享掷骰</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Microsoft Yahei", sans-serif;
+            font-family: "Microsoft YaHei", sans-serif;
         }
         body {
             background: #1a1d29;
             color: #fff;
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
             padding: 20px;
         }
-        .card {
+        .container {
             background: #252938;
             padding: 40px;
             border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
             width: 100%;
-            max-width: 460px;
+            max-width: 580px;
         }
         h1 {
             text-align: center;
@@ -43,72 +43,107 @@
             flex: 1;
         }
         label {
-            display:block;
-            margin-bottom:6px;
-            font-size:14px;
-            color:#b8c0d8;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #b8c0d8;
         }
         input {
-            width:100%;
-            padding:12px;
-            border:none;
-            border-radius:8px;
-            background:#1c202c;
-            color:#fff;
-            font-size:16px;
-            outline:none;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #1c202c;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
         }
         input:focus {
             box-shadow: 0 0 0 2px #7cc7ff;
         }
         .option-row {
-            margin-bottom:24px;
+            margin-bottom: 24px;
         }
         .checkbox-wrap {
-            display:flex;
-            align-items:center;
-            gap:8px;
-            margin-top:8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
         }
         button {
-            width:100%;
-            padding:14px;
-            border:none;
-            border-radius:10px;
-            background:#3b82f6;
-            color:white;
-            font-size:18px;
-            cursor:pointer;
-            transition: 0.2s;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #3b82f6;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
         button:hover {
-            background:#2563eb;
+            background: #2563eb;
         }
         .result-box {
-            margin-top:28px;
-            min-height:70px;
-            background:#1c202c;
-            border-radius:10px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-size:36px;
-            font-weight:bold;
-            color:#7cc7ff;
-            word-break:break-all;
-            padding:10px;
+            margin-top: 28px;
+            min-height: 70px;
+            background: #1c202c;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #7cc7ff;
+            padding: 16px;
+            word-break: break-all;
+        }
+        .history-title {
+            margin-top: 32px;
+            font-size: 18px;
+            color: #7cc7ff;
+        }
+        .history-list {
+            margin-top: 12px;
+            background: #1c202c;
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 140px;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+        .history-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #2c3448;
+        }
+        .player-name {
+            color: #60a5fa;
+            font-weight: bold;
+        }
+        .history-time {
+            font-size: 12px;
+            color: #8892aa;
+            margin-top: 4px;
         }
         .tip {
-            margin-top:12px;
-            font-size:13px;
-            color:#9aa3bd;
-            text-align:center;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #9aa4bb;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>🎲 随机数生成器</h1>
+    <div class="container">
+        <h1>🎲 联机共享掷骰</h1>
+
+        <div class="row">
+            <div class="input-group">
+                <label>玩家昵称</label>
+                <input type="text" id="playerName" value="玩家 A">
+            </div>
+        </div>
+
         <div class="row">
             <div class="input-group">
                 <label>最小值</label>
@@ -119,6 +154,7 @@
                 <input type="number" id="maxNum" value="100">
             </div>
         </div>
+
         <div class="option-row">
             <label>生成数量</label>
             <input type="number" id="countNum" value="1" min="1">
@@ -127,55 +163,113 @@
                 <label for="noRepeat">不重复抽取</label>
             </div>
         </div>
-        <button onclick="generate()">生成随机数</button>
+
+        <button onclick="rollDice()">掷骰提交</button>
         <div class="result-box" id="result">--</div>
-        <div class="tip">支持自定义范围、批量生成、无重复模式</div>
+
+        <div class="history-title">📜 全局共享记录</div>
+        <div class="history-list" id="historyBox"></div>
+
+        <div class="tip">所有打开网页的队友，自动读取同一份掷骰记录</div>
     </div>
 
-<script>
-function generate() {
-    const min = parseInt(document.getElementById('minNum').value);
-    const max = parseInt(document.getElementById('maxNum').value);
-    const count = parseInt(document.getElementById('countNum').value);
-    const noRepeat = document.getElementById('noRepeat').checked;
-    const resultEl = document.getElementById('result');
+    <script>
+        // ========= Supabase 参数，已经帮你填好了 =========
+        const SUPABASE_URL = "https://hckkghduvjfzemzprejl.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhja2tnaGR1dmp6ZmVtenByZWpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0MTY1NzcsImV4cCI6MjEwNzk5MjU3N30.pNT4sn03ZS6vB14SQ3_h-3TEH9Dw5Z7KkkoAaaWgBtc";
+        // =================================================
 
-    if(isNaN(min) || isNaN(max) || isNaN(count)){
-        resultEl.innerText = "请填写有效数字";
-        return;
-    }
-    if(min >= max){
-        resultEl.innerText = "最小值必须小于最大值";
-        return;
-    }
-    if(count < 1){
-        resultEl.innerText = "数量不能小于1";
-        return;
-    }
-    const totalRange = max - min + 1;
-    if(noRepeat && count > totalRange){
-        resultEl.innerText = "范围不足，无法无重复抽取这么多数";
-        return;
-    }
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let resArr = [];
-    if(noRepeat){
-        const pool = [];
-        for(let i = min; i <= max; i++) pool.push(i);
-        // 洗牌算法
-        for(let i = pool.length -1; i>0; i--){
-            const j = Math.floor(Math.random()*(i+1));
-            [pool[i],pool[j]] = [pool[j],pool[i]];
+        async function loadRecords() {
+            const { data, error } = await supabase
+                .from("roll_history")
+                .select("*")
+                .order("created_at", { ascending: false });
+            if (error) {
+                console.error(error);
+                return [];
+            }
+            return data;
         }
-        resArr = pool.slice(0,count);
-    }else{
-        for(let i=0;i<count;i++){
-            const num = Math.floor(Math.random()*(max-min+1)) + min;
-            resArr.push(num);
+
+        async function renderList() {
+            const records = await loadRecords();
+            const box = document.getElementById("historyBox");
+            if (records.length === 0) {
+                box.innerHTML = "<div class='history-item'>暂无掷骰记录</div>";
+                return;
+            }
+            box.innerHTML = records.map(item => `
+                <div class='history-item'>
+                    <div><span class='player-name'>${item.player_name}</span> : ${item.roll_result}</div>
+                    <div class='history-time'>${item.created_at}</div>
+                </div>
+            `).join("");
         }
-    }
-    resultEl.innerText = resArr.join(" , ");
-}
-</script>
+
+        async function rollDice() {
+            const playerName = document.getElementById("playerName").value.trim();
+            const min = parseInt(document.getElementById("minNum").value);
+            const max = parseInt(document.getElementById("maxNum").value);
+            const count = parseInt(document.getElementById("countNum").value);
+            const noRepeat = document.getElementById("noRepeat").checked;
+            const resultEl = document.getElementById("result");
+
+            if (!playerName) {
+                resultEl.innerText = "请填写玩家昵称";
+                return;
+            }
+            if (isNaN(min) || isNaN(max) || isNaN(count)) {
+                resultEl.innerText = "请填写有效数字";
+                return;
+            }
+            if (min >= max) {
+                resultEl.innerText = "最小值必须小于最大值";
+                return;
+            }
+            if (count < 1) {
+                resultEl.innerText = "生成数量至少为 1";
+                return;
+            }
+            const totalRange = max - min + 1;
+            if (noRepeat && count > totalRange) {
+                resultEl.innerText = "范围不足，无法不重复抽取";
+                return;
+            }
+
+            let output = [];
+            if (noRepeat) {
+                const pool = [];
+                for (let i = min; i <= max; i++) pool.push(i);
+                for (let i = pool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pool[i], pool[j]] = [pool[j], pool[i]];
+                }
+                output = pool.slice(0, count);
+            } else {
+                for (let i = 0; i < count; i++) {
+                    output.push(Math.floor(Math.random() * (max - min + 1)) + min);
+                }
+            }
+            const rollText = output.join(" , ");
+            resultEl.innerText = rollText;
+
+            const { error } = await supabase.from("roll_history").insert({
+                player_name: playerName,
+                roll_result: rollText,
+                min_val: min,
+                max_val: max
+            });
+            if (error) {
+                alert("写入数据库失败：" + error.message);
+                return;
+            }
+            renderList();
+        }
+
+        renderList();
+        setInterval(renderList, 3000);
+    </script>
 </body>
 </html>
