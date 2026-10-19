@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机数生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        body {
+            background: #1a1d29;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: #252938;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 460px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 26px;
+            color: #7cc7ff;
+        }
+        .row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .input-group {
+            flex: 1;
+        }
+        label {
+            display:block;
+            margin-bottom:6px;
+            font-size:14px;
+            color:#b8c0d8;
+        }
+        input {
+            width:100%;
+            padding:12px;
+            border:none;
+            border-radius:8px;
+            background:#1c202c;
+            color:#fff;
+            font-size:16px;
+            outline:none;
+        }
+        input:focus {
+            box-shadow: 0 0 0 2px #7cc7ff;
+        }
+        .option-row {
+            margin-bottom:24px;
+        }
+        .checkbox-wrap {
+            display:flex;
+            align-items:center;
+            gap:8px;
+            margin-top:8px;
+        }
+        button {
+            width:100%;
+            padding:14px;
+            border:none;
+            border-radius:10px;
+            background:#3b82f6;
+            color:white;
+            font-size:18px;
+            cursor:pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background:#2563eb;
+        }
+        .result-box {
+            margin-top:28px;
+            min-height:70px;
+            background:#1c202c;
+            border-radius:10px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:36px;
+            font-weight:bold;
+            color:#7cc7ff;
+            word-break:break-all;
+            padding:10px;
+        }
+        .tip {
+            margin-top:12px;
+            font-size:13px;
+            color:#9aa3bd;
+            text-align:center;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🎲 随机数生成器</h1>
+        <div class="row">
+            <div class="input-group">
+                <label>最小值</label>
+                <input type="number" id="minNum" value="1">
+            </div>
+            <div class="input-group">
+                <label>最大值</label>
+                <input type="number" id="maxNum" value="100">
+            </div>
+        </div>
+        <div class="option-row">
+            <label>生成数量</label>
+            <input type="number" id="countNum" value="1" min="1">
+            <div class="checkbox-wrap">
+                <input type="checkbox" id="noRepeat">
+                <label for="noRepeat">不重复抽取</label>
+            </div>
+        </div>
+        <button onclick="generate()">生成随机数</button>
+        <div class="result-box" id="result">--</div>
+        <div class="tip">支持自定义范围、批量生成、无重复模式</div>
+    </div>
+
+<script>
+function generate() {
+    const min = parseInt(document.getElementById('minNum').value);
+    const max = parseInt(document.getElementById('maxNum').value);
+    const count = parseInt(document.getElementById('countNum').value);
+    const noRepeat = document.getElementById('noRepeat').checked;
+    const resultEl = document.getElementById('result');
+
+    if(isNaN(min) || isNaN(max) || isNaN(count)){
+        resultEl.innerText = "请填写有效数字";
+        return;
+    }
+    if(min >= max){
+        resultEl.innerText = "最小值必须小于最大值";
+        return;
+    }
+    if(count < 1){
+        resultEl.innerText = "数量不能小于1";
+        return;
+    }
+    const totalRange = max - min + 1;
+    if(noRepeat && count > totalRange){
+        resultEl.innerText = "范围不足，无法无重复抽取这么多数";
+        return;
+    }
+
+    let resArr = [];
+    if(noRepeat){
+        const pool = [];
+        for(let i = min; i <= max; i++) pool.push(i);
+        // 洗牌算法
+        for(let i = pool.length -1; i>0; i--){
+            const j = Math.floor(Math.random()*(i+1));
+            [pool[i],pool[j]] = [pool[j],pool[i]];
+        }
+        resArr = pool.slice(0,count);
+    }else{
+        for(let i=0;i<count;i++){
+            const num = Math.floor(Math.random()*(max-min+1)) + min;
+            resArr.push(num);
+        }
+    }
+    resultEl.innerText = resArr.join(" , ");
+}
+</script>
+</body>
+</html>
